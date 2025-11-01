@@ -1,43 +1,32 @@
 # JSON vs TOON Comparison
 
-A simple demonstration comparing JSON and TOON (Token-Oriented Object Notation) formats for LLM inputs.
+A demonstration comparing JSON and TOON (Token-Oriented Object Notation) formats for LLM inputs.
 
 ## What is TOON?
 
-**TOON** is a token-efficient data format designed for LLM inputs. It reduces token count by 30-60% compared to JSON while maintaining the same data.
+**TOON** is a token-efficient data format that reduces token count by 30-60% compared to JSON, saving money on LLM API calls.
 
-**Benefits:**
-- 💰 **Cost Savings**: Fewer tokens = less money spent on LLM API calls
-- 🪟 **Larger Context**: More data fits in the same token budget
+### Benefits
+- 💰 **Cost Savings**: Fewer tokens = lower costs
 - 📏 **Self-Documenting**: Explicit lengths and field headers
 - 🎯 **LLM-Friendly**: Better tokenization patterns
 
 ## Quick Start
 
 ### Prerequisites
-
 - Node.js 18+
-- Ollama installed and running
+- Ollama installed (optional, for testing)
 
 ### Setup
-
 ```bash
 npm install
-ollama pull llama3.1
-ollama serve  # Keep this running in a separate terminal
 ```
 
 ### Run Examples
-
 ```bash
-# Quick side-by-side comparison
-npm start
-
-# Detailed token analysis
-npm run compare
-
-# Test with live LLM
-npm run test
+npm start          # Quick comparison
+npm run compare    # Detailed analysis
+npm run test       # Test with LLM (requires Ollama)
 ```
 
 ## Example
@@ -63,10 +52,10 @@ users[3]{id,name,role}:
 
 ## How TOON Works
 
-1. **Declares keys once** in the header: `{id,name,role}`
-2. **Shows length upfront**: `[3]` indicates 3 items
-3. **Minimal syntax**: No quotes, braces, or redundant punctuation
-4. **Row-based data**: Each row contains values in the same order
+1. **Declares keys once** in header: `{id,name,role}`
+2. **Shows length upfront**: `[3]` means 3 items
+3. **Minimal syntax**: No quotes or braces
+4. **Row-based data**: Values in same order
 
 ## Token Savings
 
@@ -79,7 +68,6 @@ users[3]{id,name,role}:
 ## Usage
 
 ### Basic Encoding
-
 ```javascript
 import { encode } from './src/toon.js';
 
@@ -90,51 +78,58 @@ const data = {
   ]
 };
 
-// Default encoding (comma delimiter)
 const toon = encode(data);
 console.log(toon);
 
-// Tab delimiter (often more efficient)
-const toonTab = encode(data, { delimiter: '\t' });
-
-// Custom indentation
-const toonIndented = encode(data, { indent: 4 });
+// Options
+encode(data, { delimiter: '\t' });  // Tab delimiter
+encode(data, { indent: 4 });        // Custom indentation
 ```
 
-### Custom Data
+### Nested Data
 
-Add your datasets in `src/compare.js`:
-
+TOON automatically handles nesting:
 ```javascript
-const myData = {
-  name: 'My Dataset',
-  data: {
-    items: [/* your data */]
-  }
+// JSON
+{ "user": { "id": 1, "address": { "city": "NYC" } } }
+
+// TOON
+user:
+  id: 1
+  address:
+    city: NYC
+```
+
+**Tip:** Flatten nested data for best token savings:
+```javascript
+// Instead of nested objects, flatten:
+const flattened = {
+  users: [
+    { id: 1, city: "NYC" },
+    { id: 2, city: "LA" }
+  ]
 };
 ```
 
 ## When to Use TOON
 
-**✅ Good for:**
+✅ **Good for:**
 - Uniform arrays of objects
-- Tabular data with identical fields
 - Large datasets sent to LLMs
 - Reducing token costs
+- Flat or shallow structures
 
-**❌ Not ideal for:**
+❌ **Not ideal for:**
 - Non-uniform structures
-- Deeply nested objects
-- API responses
+- Very deeply nested objects (>3 levels)
 - General data storage
 
 ## Technical Details
 
-- Uses [tiktoken](https://github.com/openai/tiktoken) for accurate token counting
-- Implements simplified TOON v1.3 specification
-- Supports multiple delimiters (comma, tab, pipe)
-- Works with Ollama local models for testing
+- Uses [tiktoken](https://github.com/openai/tiktoken) for token counting
+- Supports delimiters: comma, tab, pipe
+- Works with Ollama local models
 
 ## License
 
-Apache License 2.0 
+Apache License 2.0
