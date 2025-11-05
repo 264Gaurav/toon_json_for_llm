@@ -3,12 +3,21 @@
 /**
  * Comparison tool for JSON vs TOON formats
  * Measures token count, size in bytes, and visualizes differences
+ * 
+ * This script runs comprehensive comparisons across multiple test datasets
+ * to demonstrate TOON's token reduction benefits across different data sizes.
  */
 
+// ES6 import: brings in the encode function from toon.js module
 import { encode } from './toon.js';
+
+// Import tiktoken's encoding_for_model function
+// This is used to count tokens accurately for different LLM models
 import { encoding_for_model } from 'tiktoken';
 
-// Test datasets of different sizes and types
+// 'const' keyword: declares constant variable
+// Object literal: { } creates an object with properties
+// Test datasets of different sizes and types to show TOON's effectiveness
 const testDatasets = {
   smallUsers: {
     name: 'Small User Dataset (5 users)',
@@ -55,33 +64,91 @@ const testDatasets = {
   }
 };
 
+/**
+ * Counts tokens using tiktoken tokenizer
+ * 
+ * TOKENIZER CONCEPT EXPLAINED:
+ * - Tokenizers convert text into tokens (not words or characters)
+ * - Tokens are the unit of measurement for LLM API costs
+ * - Example: "Hello world" might be 2 tokens, but "Hello" might be 1 token
+ * - Different models use different tokenization rules:
+ *   - GPT-4 uses cl100k_base encoding
+ *   - Older models use different encodings
+ * - Token count directly affects API pricing and context window usage
+ * 
+ * @param {string} text - Text to tokenize
+ * @param {string} model - Model name (determines which tokenizer to use)
+ * @returns {number} - Number of tokens
+ */
 function countTokens(text, model = 'gpt-4o') {
+  // try-catch: error handling - try block may throw errors
   try {
+    // Get tokenizer encoder for the specified model
     const encoding = encoding_for_model(model);
+    
+    // Encode text to array of token IDs
     const tokens = encoding.encode(text);
+    
+    // Return count of tokens
     return tokens.length;
   } catch (error) {
+    // catch block: handles errors thrown in try block
+    // console.warn() - logs warning message (non-fatal)
+    // Template literal: ${} embeds variables in string
     console.warn(`Warning: Could not use tokenizer for ${model}, using fallback`);
-    // Fallback: rough estimate (4 chars per token)
+    
+    // Fallback: rough estimate (4 chars per token is average)
+    // Math.ceil() - rounds up to nearest integer
     return Math.ceil(text.length / 4);
   }
 }
 
+/**
+ * Analyzes a formatted data string and calculates various metrics
+ * 
+ * @param {*} data - The data (not used, but kept for consistency)
+ * @param {string} formatName - Name of the format (e.g., 'JSON (Pretty)')
+ * @param {Function} formatter - Function that formats data (returns string)
+ * @returns {Object} - Object containing format name, content, and metrics
+ * 
+ * Function parameter: formatter is a function passed as argument
+ * This is a "higher-order function" - accepts another function as parameter
+ */
 function analyzeFormat(data, formatName, formatter) {
+  // Call formatter function with data - this generates the formatted string
   const formatted = formatter(data);
+  
+  // Buffer.byteLength() - calculates byte size in UTF-8 encoding
+  // UTF-8: variable-length encoding (1-4 bytes per character)
   const byteSize = Buffer.byteLength(formatted, 'utf8');
+  
+  // String.length - number of characters (not bytes)
   const charCount = formatted.length;
+  
+  // split('\n') - splits string into array by newline
+  // Array.length - number of lines
   const lines = formatted.split('\n').length;
   
-  // Try multiple tokenizer models
+  // Try multiple tokenizer models to show consistency
+  // Object literal: {} creates empty object
   const tokenCounts = {};
+  
+  // Array of model names to test
+  // 'gpt-4o' - latest GPT-4 model
+  // 'gpt-4' - standard GPT-4
+  // 'cl100k_base' - base encoding name (used by GPT-4)
   const models = ['gpt-4o', 'gpt-4', 'cl100k_base'];
   
+  // for...of loop: iterates over array elements
+  // 'const model' - declares constant for each iteration
   for (const model of models) {
     try {
+      // Object property assignment: tokenCounts[model] = value
+      // Bracket notation: access property by variable name
       tokenCounts[model] = countTokens(formatted, model);
     } catch (error) {
-      // Skip if model not available
+      // Skip if model not available (silent fail)
+      // Empty catch block - error is ignored
     }
   }
 
@@ -139,14 +206,24 @@ function compareDataset(dataset) {
     );
   });
 
-  // Calculate savings
+  // Calculate savings: compare JSON baseline with best TOON format
+  // find() - returns first element matching condition
+  // Arrow function: r => r.format === 'JSON (Pretty)' checks format name
   const jsonBaseline = results.find(r => r.format === 'JSON (Pretty)');
+  
+  // Find best TOON format by sorting by token count
+  // filter() - keeps only TOON formats
+  // startsWith() - checks if string starts with 'TOON'
+  // sort() - sorts array using comparison function
+  // Comparison function: (a, b) => a - b sorts ascending (lowest first)
+  // || operator: if tokens['gpt-4o'] is undefined, use 0
+  // [0] - gets first element (best/lowest token count)
   const toonBest = results
     .filter(r => r.format.startsWith('TOON'))
     .sort((a, b) => {
       const aTokens = a.metrics.tokens['gpt-4o'] || 0;
       const bTokens = b.metrics.tokens['gpt-4o'] || 0;
-      return aTokens - bTokens;
+      return aTokens - bTokens; // Negative = a comes first, positive = b comes first
     })[0];
 
   if (jsonBaseline && toonBest) {
@@ -170,15 +247,27 @@ function compareDataset(dataset) {
   return { dataset: dataset.name, results, bestFormat: toonBest.format };
 }
 
-// Main execution
+/**
+ * Main execution function
+ * 
+ * 'async' keyword: marks function as asynchronous (can use await)
+ * Async functions return Promises (but we're not using await here)
+ */
 async function main() {
   console.log('🚀 JSON vs TOON Comparison Tool');
   console.log('Using tokenizer from tiktoken library');
   
+  // Array to store all comparison results
   const allResults = [];
   
+  // for...in loop: iterates over object property names (keys)
+  // testDatasets is an object, so 'key' is property name (e.g., 'smallUsers')
+  // testDatasets[key] - bracket notation to access property value
   for (const key in testDatasets) {
+    // Call compareDataset function with dataset object
     const result = compareDataset(testDatasets[key]);
+    
+    // push() - array method: adds element to end of array
     allResults.push(result);
   }
 
