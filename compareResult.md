@@ -9,11 +9,6 @@ Using tokenizer from tiktoken library
 ================================================================================
 Dataset: Small User Dataset (5 users)
 ================================================================================
-Warning: Could not use tokenizer for cl100k_base, using fallback
-Warning: Could not use tokenizer for cl100k_base, using fallback
-Warning: Could not use tokenizer for cl100k_base, using fallback
-Warning: Could not use tokenizer for cl100k_base, using fallback
-Warning: Could not use tokenizer for cl100k_base, using fallback
 
 📊 Comparison Metrics:
                            Bytes       Chars       Lines      GPT-4o
@@ -66,11 +61,6 @@ users:
 ================================================================================
 Dataset: Medium Product Dataset (10 products)
 ================================================================================
-Warning: Could not use tokenizer for cl100k_base, using fallback
-Warning: Could not use tokenizer for cl100k_base, using fallback
-Warning: Could not use tokenizer for cl100k_base, using fallback
-Warning: Could not use tokenizer for cl100k_base, using fallback
-Warning: Could not use tokenizer for cl100k_base, using fallback
 
 📊 Comparison Metrics:
                            Bytes       Chars       Lines      GPT-4o
@@ -128,23 +118,18 @@ products:
 ================================================================================
 Dataset: Large Order Dataset (20 orders)
 ================================================================================
-Warning: Could not use tokenizer for cl100k_base, using fallback
-Warning: Could not use tokenizer for cl100k_base, using fallback
-Warning: Could not use tokenizer for cl100k_base, using fallback
-Warning: Could not use tokenizer for cl100k_base, using fallback
-Warning: Could not use tokenizer for cl100k_base, using fallback
 
 📊 Comparison Metrics:
                            Bytes       Chars       Lines      GPT-4o
 --------------------------------------------------------------------------------
-JSON (Compact)              2314        2314           1         893
-JSON (Pretty)               3642        3642         184        1397
-TOON (Comma)                 988         988          22         628
-TOON (Tab)                   988         988          22         617
-TOON (Pipe)                  988         988          22         630
+JSON (Compact)              2322        2322           1         892
+JSON (Pretty)               3650        3650         184        1396
+TOON (Comma)                 996         996          22         627
+TOON (Tab)                   996         996          22         617
+TOON (Pipe)                  996         996          22         629
 
 ✅ Best TOON format: TOON (Tab)
-💡 Token reduction: 55.8% (1397 → 617 tokens)
+💡 Token reduction: 55.8% (1396 → 617 tokens)
 
 📄 Sample Outputs:
 
@@ -155,35 +140,35 @@ TOON (Pipe)                  988         988          22         630
       "id": 1,
       "customerId": 1,
       "productId": 1,
-      "quantity": 5,
-      "price": 18.92,
-      "date": "2025-01-08T14:00:00Z",
-      "status": "pending"
+      "quantity": 2,
+      "price": 38.96,
+      "date": "2025-01-26T15:00:00Z",
+      "status": "completed"
     },
     {
       "id": 2,
       "customerId": 2,
       "productId": 2,
-      "quantity": 3,
-      "price": 97.94,
-      "date": "2025-01-18T00:00:00Z",
+      "quantity": 4,
+      "price": 56.34,
+      "date": "2025-01-12T23:00:00Z",
       "status": "pending"
     },
     {
       "id": 3,
-   ...
+ ...
 
 --- TOON (Tab) ---
 orders:
-[20     ]{id    customerId      productId       quantity        price   date    status}:
-  1     1       1       5       18.92   2025-01-08T14:00:00Z    pending
-  2     2       2       3       97.94   2025-01-18T00:00:00Z    pending
-  3     3       3       3       80.49   2025-01-22T19:00:00Z    pending
-  4     4       4       2       35.86   2025-01-22T09:00:00Z    shipped
-  5     5       5       3       22.75   2025-01-26T22:00:00Z    pending
-  6     1       6       4       23.11   2025-01-14T11:00:00Z    shipped
-  7     2       7       5       42.92   2025-01-01T18:00:00Z    shipped
-  8     3       8       5       18.05   20...
+[20     ]{id    customerId      productId       quantity        price   date    status}:    
+  1     1       1       2       38.96   2025-01-26T15:00:00Z    completed
+  2     2       2       4       56.34   2025-01-12T23:00:00Z    pending
+  3     3       3       1       38.78   2025-01-01T02:00:00Z    pending
+  4     4       4       3       90.39   2025-01-18T01:00:00Z    shipped
+  5     5       5       3       84.11   2025-01-21T23:00:00Z    pending
+  6     1       6       5       104.56  2025-01-27T02:00:00Z    completed
+  7     2       7       4       96.41   2025-01-13T10:00:00Z    shipped
+  8     3       8       4       10....
 
 
 ================================================================================
@@ -206,4 +191,4 @@ Large Order Dataset (20 orders)
   - Tab delimiters often tokenize better than commas
   - TOON is most effective for uniform object arrays
   - Real savings: ~40-60% token reduction for tabular data
-(base) PS C:\Users\gaura\OneDrive\Desktop\AI projects\toon_json_for_llm>
+(base) PS C:\Users\gaura\OneDrive\Desktop\AI projects\toon_json_for_llm> 

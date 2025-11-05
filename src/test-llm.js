@@ -39,6 +39,7 @@ const testData = {
 const jsonFormat = JSON.stringify(testData, null, 2);
 const toonFormat = encode(testData, { delimiter: '\t' });
 
+
 /**
  * Tests a specific Ollama model with both JSON and TOON formats
  * 
@@ -64,6 +65,10 @@ Format your response as a simple list.`;
   // Test 1: JSON Format
   console.log('\n📊 Test 1: JSON Format');
   console.log('─'.repeat(80));
+
+  console.log("json data : ", jsonFormat)
+
+  console.log('─'.repeat(30));
   
   // Build prompt with JSON data
   // Template literal embeds jsonFormat variable
@@ -117,6 +122,10 @@ Format your response as a simple list.`;
     // Test 2: TOON Format
     console.log('\n📊 Test 2: TOON Format');
     console.log('─'.repeat(80));
+
+    console.log("toon data : ", toonFormat)
+
+    console.log('─'.repeat(30));
     
     const toonPrompt = `${prompt}\n\nProduct data in TOON format:\n\`\`\`toon\n${toonFormat}\n\`\`\``;
     
