@@ -57,6 +57,10 @@ npm run compare    # Detailed metrics (bytes, lines, tokens)
 npm run test       # Test with an Ollama model (if installed)
 ```
 
+**Example Results:**
+- [Detailed Comparison Results](compareResult.md) - Token counts, byte sizes, and format comparisons across multiple datasets
+- [LLM Test Results](testResult.md) - Real-world testing with Ollama (llama3.1:8b) showing response times and token usage
+
 Use in Code
 ```javascript
 import { encode } from './src/toon.js';
