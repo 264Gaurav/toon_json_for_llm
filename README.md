@@ -8,7 +8,7 @@ A demonstration comparing JSON and TOON (Token-Oriented Object Notation) formats
 
 ### Benefits
 - 💰 **Cost Savings**: Fewer tokens = lower costs
-- 📏 **Self-Documenting**: Explicit lengths and field headers
+- 📏 **Context-window optimisation**: Explicit lengths and field headers
 - 🎯 **LLM-Friendly**: Better tokenization patterns
 
 ## Quick Start
