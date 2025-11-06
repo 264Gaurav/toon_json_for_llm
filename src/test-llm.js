@@ -15,175 +15,246 @@
  * - This allows testing TOON format with real LLM responses
  */
 
-// Import TOON encoder function
 import { encode } from './toon.js';
-
-// Import Ollama client library
-// This is a Node.js package that provides API to interact with Ollama
+import { testData, testPrompt } from './test-data.js';
 import ollama from 'ollama';
 
-// Sample data for testing
-const testData = {
-  products: [
-    { id: 1, name: 'Wireless Mouse', price: 29.99, category: 'Electronics', inStock: true },
-    { id: 2, name: 'Mechanical Keyboard', price: 89.99, category: 'Electronics', inStock: true },
-    { id: 3, name: 'USB-C Hub', price: 45.00, category: 'Electronics', inStock: false },
-    { id: 4, name: 'Monitor Stand', price: 39.99, category: 'Office', inStock: true },
-    { id: 5, name: 'Desk Lamp', price: 24.99, category: 'Office', inStock: true },
-    { id: 6, name: 'Ergonomic Chair', price: 249.99, category: 'Furniture', inStock: true },
-    { id: 7, name: 'Standing Desk', price: 499.99, category: 'Furniture', inStock: false },
-    { id: 8, name: 'Cable Management', price: 12.99, category: 'Office', inStock: true }
-  ]
-};
+/**
+ * Warmup function to check if Ollama model is ready
+ * Sends a simple "hi" message to initialize the model before actual tests
+ * This ensures accurate timing measurements for JSON vs TOON comparisons
+ * 
+ * @param {string} modelName - Name of the Ollama model to warmup
+ * @returns {Promise<boolean>} - Returns true if warmup successful, false otherwise
+ */
+async function warmupModel(modelName) {
+  console.log('🔥 Warming up model (this may take a moment on first run)...');
+  
+  try {
+    const warmupStart = Date.now();
+    const response = await ollama.chat({
+      model: modelName,
+      messages: [
+        { role: 'user', content: 'Hi, are you ready?' }
+      ]
+    });
+    const warmupTime = Date.now() - warmupStart;
+    
+    console.log(`✅ Model is ready (warmup took ${warmupTime}ms)`);
+    return true;
+  } catch (error) {
+    console.error('❌ Warmup failed:', error.message);
+    return false;
+  }
+}
 
-const jsonFormat = JSON.stringify(testData, null, 2);
-const toonFormat = encode(testData, { delimiter: '\t' });
+/**
+ * Checks if a model is available and ready
+ * 
+ * @param {string} modelName - Name of the model to check
+ * @returns {Promise<boolean>} - Returns true if model is available and ready
+ */
+async function checkModelReady(modelName) {
+  try {
+    const models = await ollama.list();
+    const isAvailable = models.models.some(m => 
+      m.name === modelName || m.name.includes(modelName.split(':')[0])
+    );
+    
+    if (!isAvailable) {
+      return false;
+    }
+    
+    // Warmup the model to ensure it's ready
+    return await warmupModel(modelName);
+  } catch (error) {
+    console.error('❌ Error checking model:', error.message);
+    return false;
+  }
+}
 
+/**
+ * Sends a prompt to the Ollama model and measures response time
+ * 
+ * @param {string} modelName - Name of the Ollama model
+ * @param {string} prompt - The prompt to send
+ * @param {string} formatType - Type of format ('json' or 'toon')
+ * @returns {Promise<Object|null>} - Response metrics or null if error
+ */
+async function sendPrompt(modelName, prompt, formatType) {
+  try {
+    const startTime = Date.now();
+    
+    const response = await ollama.chat({
+      model: modelName,
+      messages: [
+        { role: 'system', content: 'You are a helpful assistant that analyzes data accurately.' },
+        { role: 'user', content: prompt }
+      ]
+    });
+    
+    const responseTime = Date.now() - startTime;
+    
+    return {
+      time: responseTime,
+      contentLength: response.message.content.length,
+      promptLength: prompt.length,
+      content: response.message.content,
+      tokens: response.eval_count || 'N/A'
+    };
+  } catch (error) {
+    console.error(`❌ Error with ${formatType} format:`, error.message);
+    return null;
+  }
+}
 
 /**
  * Tests a specific Ollama model with both JSON and TOON formats
  * 
- * @param {string} modelName - Name of the Ollama model to test (e.g., 'llama3.1')
- * 
- * 'async' keyword: marks function as asynchronous
- * Async functions can use 'await' to wait for Promises to resolve
- * This is needed because LLM API calls are asynchronous (take time)
+ * @param {string} modelName - Name of the Ollama model to test
+ * @returns {Promise<Object|null>} - Test results or null if error
  */
 async function testWithModel(modelName) {
   console.log(`\n🤖 Testing with model: ${modelName}`);
   console.log('='.repeat(80));
 
-  // Prompt template: instruction for the LLM
-  // Template literal: backticks allow multi-line strings
-  const prompt = `You are a helpful assistant. Analyze the product data below and list all products that are:
-1. In the "Electronics" category
-2. Currently in stock
+  // Prepare data formats
+  const jsonFormat = JSON.stringify(testData, null, 2);
+  const toonFormat = encode(testData, { delimiter: '\t' });
 
-Format your response as a simple list.`;
+  // Calculate input sizes (data only, not including prompt wrapper)
+  const jsonDataSize = {
+    chars: jsonFormat.length,
+    bytes: Buffer.byteLength(jsonFormat, 'utf8')
+  };
+  
+  const toonDataSize = {
+    chars: toonFormat.length,
+    bytes: Buffer.byteLength(toonFormat, 'utf8')
+  };
+
+  // Build prompts
+  const jsonPrompt = `${testPrompt}\n\nProduct data in JSON format:\n\`\`\`json\n${jsonFormat}\n\`\`\``;
+  const toonPrompt = `${testPrompt}\n\nProduct data in TOON format:\n\`\`\`toon\n${toonFormat}\n\`\`\``;
 
   // Test 1: JSON Format
   console.log('\n📊 Test 1: JSON Format');
   console.log('─'.repeat(80));
-
-  console.log("json data : ", jsonFormat)
-
+  console.log('JSON data:', jsonFormat);
+  console.log(`📏 JSON data size: ${jsonDataSize.chars} chars, ${jsonDataSize.bytes} bytes`);
   console.log('─'.repeat(30));
   
-  // Build prompt with JSON data
-  // Template literal embeds jsonFormat variable
-  // Markdown code blocks (```json) help LLM understand the format
-  const jsonPrompt = `${prompt}\n\nProduct data in JSON format:\n\`\`\`json\n${jsonFormat}\n\`\`\``;
+  const jsonMetrics = await sendPrompt(modelName, jsonPrompt, 'json');
   
-  // try-catch: handles errors from API calls
-  try {
-    // Date.now() - returns current timestamp in milliseconds
-    // Used to measure response time
-    const jsonStart = Date.now();
-    
-    // 'await' keyword: waits for Promise to resolve
-    // ollama.chat() - sends chat request to Ollama API
-    // Returns a Promise that resolves to response object
-    const jsonResponse = await ollama.chat({
-      model: modelName, // Which model to use
-      messages: [
-        // System message: sets the behavior/role of the assistant
-        { role: 'system', content: 'You are a helpful assistant that analyzes data accurately.' },
-        // User message: the actual prompt with data
-        { role: 'user', content: jsonPrompt }
-      ]
-    });
-    
-    // Calculate elapsed time: current time - start time
-    const jsonTime = Date.now() - jsonStart;
-    
-    // Log metrics from JSON test
-    // Template literals: ${} embeds variables
-    console.log(`⏱️  Response time: ${jsonTime}ms`);
-    console.log(`📝 Response length: ${jsonResponse.message.content.length} chars`);
-    
-    // eval_count - number of tokens generated by model (may not always be available)
-    // || operator: if eval_count is undefined/null, use 'N/A'
-    console.log(`🔢 Tokens used: ${jsonResponse.eval_count || 'N/A'}`);
-    console.log('\nResponse:');
-    
-    // substring(0, 300) - gets first 300 characters
-    // Ternary operator: if length > 300, append '...', else append ''
-    console.log(jsonResponse.message.content.substring(0, 300) + (jsonResponse.message.content.length > 300 ? '...' : ''));
-    
-    // Store metrics in object for comparison
-    // Object literal: { } creates object with properties
-    const jsonMetrics = {
-      time: jsonTime,                              // Response time in milliseconds
-      contentLength: jsonResponse.message.content.length, // Length of response
-      promptLength: jsonPrompt.length              // Length of input prompt
-    };
-
-    // Test 2: TOON Format
-    console.log('\n📊 Test 2: TOON Format');
-    console.log('─'.repeat(80));
-
-    console.log("toon data : ", toonFormat)
-
-    console.log('─'.repeat(30));
-    
-    const toonPrompt = `${prompt}\n\nProduct data in TOON format:\n\`\`\`toon\n${toonFormat}\n\`\`\``;
-    
-    const toonStart = Date.now();
-    const toonResponse = await ollama.chat({
-      model: modelName,
-      messages: [
-        { role: 'system', content: 'You are a helpful assistant that analyzes data accurately.' },
-        { role: 'user', content: toonPrompt }
-      ]
-    });
-    const toonTime = Date.now() - toonStart;
-    
-    console.log(`⏱️  Response time: ${toonTime}ms`);
-    console.log(`📝 Response length: ${toonResponse.message.content.length} chars`);
-    console.log(`🔢 Tokens used: ${toonResponse.eval_count || 'N/A'}`);
-    console.log('\nResponse:');
-    console.log(toonResponse.message.content.substring(0, 300) + (toonResponse.message.content.length > 300 ? '...' : ''));
-    
-    const toonMetrics = {
-      time: toonTime,
-      contentLength: toonResponse.message.content.length,
-      promptLength: toonPrompt.length
-    };
-
-    // Comparison: Calculate differences between JSON and TOON
-    console.log('\n📊 Comparison');
-    console.log('─'.repeat(80));
-    
-    // Calculate percentage reduction in prompt size
-    // Formula: ((old - new) / old) * 100
-    // toFixed(1) - rounds to 1 decimal place
-    const promptReduction = ((jsonMetrics.promptLength - toonMetrics.promptLength) / jsonMetrics.promptLength * 100).toFixed(1);
-    
-    // Calculate percentage difference in response time
-    const timeDifference = ((toonMetrics.time - jsonMetrics.time) / jsonMetrics.time * 100).toFixed(1);
-    
-    // Display comparison results
-    // Template literal with arrow (→) shows before → after
-    console.log(`Input size reduction: ${promptReduction}% (${jsonMetrics.promptLength} → ${toonMetrics.promptLength} chars)`);
-    console.log(`Response time difference: ${timeDifference}% (${jsonMetrics.time}ms → ${toonMetrics.time}ms)`);
-    
-    // if-else: conditional execution
-    // < operator: less than comparison
-    if (toonMetrics.time < jsonMetrics.time) {
-      console.log('✅ TOON is faster!');
-    } else {
-      console.log('⚠️  JSON is faster (may vary by test)');
-    }
-
-    return { jsonMetrics, toonMetrics };
-
-  } catch (error) {
-    console.error('❌ Error:', error.message);
-    console.log('\n💡 Make sure Ollama is running and the model is available:');
-    console.log('   ollama pull llama3.1');
-    console.log('   ollama serve');
+  if (!jsonMetrics) {
     return null;
   }
+  
+  console.log(`⏱️  Response time: ${jsonMetrics.time}ms`);
+  console.log(`📝 Response length: ${jsonMetrics.contentLength} chars`);
+  console.log(`🔢 Tokens used: ${jsonMetrics.tokens}`);
+  console.log('\nResponse:');
+  console.log(jsonMetrics.content.substring(0, 300) + (jsonMetrics.content.length > 300 ? '...' : ''));
+
+  // Test 2: TOON Format
+  console.log('\n📊 Test 2: TOON Format');
+  console.log('─'.repeat(80));
+  console.log('TOON data:', toonFormat);
+  console.log(`📏 TOON data size: ${toonDataSize.chars} chars, ${toonDataSize.bytes} bytes`);
+  console.log('─'.repeat(30));
+  
+  const toonMetrics = await sendPrompt(modelName, toonPrompt, 'toon');
+  
+  if (!toonMetrics) {
+    return null;
+  }
+  
+  console.log(`⏱️  Response time: ${toonMetrics.time}ms`);
+  console.log(`📝 Response length: ${toonMetrics.contentLength} chars`);
+  console.log(`🔢 Tokens used: ${toonMetrics.tokens}`);
+  console.log('\nResponse:');
+  console.log(toonMetrics.content.substring(0, 300) + (toonMetrics.content.length > 300 ? '...' : ''));
+
+  // Comparison
+  console.log('\n📊 Comparison');
+  console.log('='.repeat(80));
+  
+  // Input size comparison (data only)
+  const dataSizeReductionChars = ((jsonDataSize.chars - toonDataSize.chars) / jsonDataSize.chars * 100).toFixed(1);
+  const dataSizeReductionBytes = ((jsonDataSize.bytes - toonDataSize.bytes) / jsonDataSize.bytes * 100).toFixed(1);
+  
+  console.log('\n📦 INPUT SIZE COMPARISON (Data Only):');
+  console.log('─'.repeat(80));
+  console.log(`JSON Format:  ${jsonDataSize.chars} chars, ${jsonDataSize.bytes} bytes`);
+  console.log(`TOON Format:  ${toonDataSize.chars} chars, ${toonDataSize.bytes} bytes`);
+  console.log(`\n💾 Size Reduction:`);
+  console.log(`   Characters: ${dataSizeReductionChars}% (${jsonDataSize.chars} → ${toonDataSize.chars} chars)`);
+  console.log(`   Bytes:      ${dataSizeReductionBytes}% (${jsonDataSize.bytes} → ${toonDataSize.bytes} bytes)`);
+  
+  if (toonDataSize.chars < jsonDataSize.chars) {
+    console.log('   ✅ TOON is smaller!');
+  } else {
+    console.log('   ⚠️  JSON is smaller');
+  }
+  
+  // Full prompt size comparison
+  const promptReduction = ((jsonMetrics.promptLength - toonMetrics.promptLength) / jsonMetrics.promptLength * 100).toFixed(1);
+  
+  console.log('\n📝 FULL PROMPT SIZE COMPARISON:');
+  console.log('─'.repeat(80));
+  console.log(`JSON Prompt:  ${jsonMetrics.promptLength} chars`);
+  console.log(`TOON Prompt:  ${toonMetrics.promptLength} chars`);
+  console.log(`Reduction:    ${promptReduction}% (${jsonMetrics.promptLength} → ${toonMetrics.promptLength} chars)`);
+  
+  // Response time comparison
+  const timeDifference = ((toonMetrics.time - jsonMetrics.time) / jsonMetrics.time * 100).toFixed(1);
+  
+  console.log('\n⏱️  RESPONSE TIME COMPARISON:');
+  console.log('─'.repeat(80));
+  console.log(`JSON:  ${jsonMetrics.time}ms`);
+  console.log(`TOON:  ${toonMetrics.time}ms`);
+  console.log(`Difference: ${timeDifference}% (${jsonMetrics.time}ms → ${toonMetrics.time}ms)`);
+  
+  if (toonMetrics.time < jsonMetrics.time) {
+    console.log('✅ TOON is faster!');
+  } else {
+    console.log('⚠️  JSON is faster (may vary by test)');
+  }
+
+  return { 
+    jsonMetrics, 
+    toonMetrics,
+    inputSizes: {
+      json: jsonDataSize,
+      toon: toonDataSize,
+      reduction: {
+        chars: parseFloat(dataSizeReductionChars),
+        bytes: parseFloat(dataSizeReductionBytes)
+      }
+    }
+  };
+}
+
+/**
+ * Finds an available model from the preferred list
+ * 
+ * @param {Array} availableModels - List of available models from Ollama
+ * @param {Array} preferredModels - List of preferred model names to try
+ * @returns {string|null} - Name of the first available preferred model, or null
+ */
+function findPreferredModel(availableModels, preferredModels) {
+  for (const model of preferredModels) {
+    const modelBase = model.split(':')[0];
+    const found = availableModels.find(m => 
+      m.name === model || m.name.includes(modelBase)
+    );
+    
+    if (found) {
+      return found.name;
+    }
+  }
+  
+  return null;
 }
 
 /**
@@ -192,33 +263,22 @@ Format your response as a simple list.`;
  * This function:
  * 1. Checks if Ollama is running
  * 2. Lists available models
- * 3. Tries to find a preferred model
- * 4. Runs comparison tests
+ * 3. Finds a preferred model
+ * 4. Warms up the model to ensure accurate timing
+ * 5. Runs comparison tests
  */
 async function main() {
   console.log('🚀 LLM Format Comparison Test');
   console.log('Testing JSON vs TOON with Ollama\n');
   
-  // Check if Ollama is available
-  // try-catch: handles connection errors
   try {
-    // ollama.list() - returns list of available models
-    // 'await' - waits for API call to complete
+    // Check if Ollama is available
     const models = await ollama.list();
     console.log('✅ Ollama is running');
-    
-    // map() - transforms array: extracts name from each model object
-    // join(', ') - joins array elements with comma and space
     console.log('Available models:', models.models.map(m => m.name).join(', '));
     
-    // Try different models in order of preference
-    // Array of model names to try (in priority order)
-    // 'llama3.1' - latest Llama model (most preferred)
-    // 'llama3.1:8b' - 8 billion parameter version
-    // 'llama3' - previous Llama version
-    // 'mistral' - Mistral AI model
-    // 'codellama' - Code-specialized model
-    const modelsToTry = [
+    // Preferred models in order of preference
+    const preferredModels = [
       'llama3.1',
       'llama3.1:8b',
       'llama3',
@@ -226,56 +286,35 @@ async function main() {
       'codellama'
     ];
     
-    // 'let' keyword: declares variable that can be reassigned
-    // (unlike 'const' which cannot be reassigned)
-    let modelFound = false;
+    // Find a preferred model
+    let modelToUse = findPreferredModel(models.models, preferredModels);
     
-    // for...of loop: iterate through preferred models
-    for (const model of modelsToTry) {
-      // some() - returns true if any element passes test
-      // includes() - checks if string contains substring
-      // split(':')[0] - splits by ':' and gets first part (e.g., 'llama3.1:8b' → 'llama3.1')
-      const available = models.models.some(m => m.name.includes(model.split(':')[0]));
-      
-      // if statement: execute if model is available
-      if (available) {
-        // find() - returns first element matching condition
-        // ?. optional chaining: if find() returns undefined, don't access .name
-        // || operator: if left side is falsy, use right side
-        const actualModel = models.models.find(m => m.name.includes(model.split(':')[0]))?.name || model;
-        
-        // 'await' - wait for test to complete
-        await testWithModel(actualModel);
-        
-        // Set flag to indicate model was found
-        modelFound = true;
-        
-        // 'break' keyword: exits the loop immediately
-        break;
-      }
-    }
-    
-    // If no preferred model found, use fallback
-    // ! operator: logical NOT (negation)
-    if (!modelFound) {
-      console.log('\n⚠️  None of the preferred models found. Using first available model.');
-      
-      // Check if any models are available
-      // Array.length - number of elements
+    if (!modelToUse) {
       if (models.models.length > 0) {
-        // Use first available model
-        // [0] - access first element of array
-        await testWithModel(models.models[0].name);
+        console.log('\n⚠️  None of the preferred models found. Using first available model.');
+        modelToUse = models.models[0].name;
       } else {
-        // No models available - show instructions
         console.log('❌ No models available. Please install a model:');
         console.log('   ollama pull llama3.1');
+        return;
       }
     }
     
+    // Check if model is ready and warmup
+    console.log(`\n🔍 Checking if model "${modelToUse}" is ready...`);
+    const isReady = await checkModelReady(modelToUse);
+    
+    if (!isReady) {
+      console.log('\n❌ Model is not ready. Please ensure:');
+      console.log('   1. Ollama is running: ollama serve');
+      console.log('   2. Model is installed: ollama pull llama3.1');
+      return;
+    }
+    
+    // Run the actual tests
+    await testWithModel(modelToUse);
+    
   } catch (error) {
-    // catch block: handles errors from try block
-    // console.error() - logs error message
     console.error('❌ Ollama is not running or not available');
     console.log('\n💡 To get started:');
     console.log('   1. Install Ollama: https://ollama.ai');
@@ -288,6 +327,4 @@ async function main() {
 }
 
 // Call main function and catch any unhandled errors
-// .catch() - Promise method: handles errors that occur in async function
-// console.error - logs error to console
 main().catch(console.error);

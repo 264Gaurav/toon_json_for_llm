@@ -9,12 +9,16 @@ Testing JSON vs TOON with Ollama
 ✅ Ollama is running
 Available models: llava:7b, nomic-embed-text:latest, llama3.1:8b, gemma3:4b
 
+🔍 Checking if model "llama3.1:8b" is ready...
+🔥 Warming up model (this may take a moment on first run)...
+✅ Model is ready (warmup took 3277ms)
+
 🤖 Testing with model: llama3.1:8b
 ================================================================================
 
 📊 Test 1: JSON Format
 ────────────────────────────────────────────────────────────────────────────────
-json data :  {
+JSON data: {
   "products": [
     {
       "id": 1,
@@ -74,27 +78,23 @@ json data :  {
     }
   ]
 }
+📏 JSON data size: 1096 chars, 1096 bytes
 ──────────────────────────────
-⏱️  Response time: 12786ms
-📝 Response length: 477 chars
-🔢 Tokens used: 151
+⏱️  Response time: 6144ms
+📝 Response length: 223 chars
+🔢 Tokens used: 59
 
 Response:
-Here is the list of products that meet the criteria:
+Here is the list of products in the "Electronics" category and are less than $50:
 
-1. Wireless Mouse (ID: 1)
-2. USB-C Hub (ID: 3) *Note: This product is currently out of stock*
-3. Monitor Stand (ID: 4)
-4. Desk Lamp (ID: 5)
-5. Cable Management (ID: 8)
+1. Wireless Mouse ($29.99)
+2. USB-C Hub ($45)
 
-I removed the USB-C Hub from the list since it's out of stock.
-
-If you'd like...
+Note that I excluded products with a price greater than or equal to $50, as per your request.  
 
 📊 Test 2: TOON Format
 ────────────────────────────────────────────────────────────────────────────────
-toon data :  products:
+TOON data: products:
 [8      ]{id    name    price   category        inStock}:
   1     "Wireless Mouse"        29.99   Electronics     true
   2     "Mechanical Keyboard"   89.99   Electronics     true
@@ -104,23 +104,50 @@ toon data :  products:
   6     "Ergonomic Chair"       249.99  Furniture       true
   7     "Standing Desk" 499.99  Furniture       false
   8     "Cable Management"      12.99   Office  true
+📏 TOON data size: 377 chars, 377 bytes
 ──────────────────────────────
-⏱️  Response time: 9560ms
-📝 Response length: 451 chars
-🔢 Tokens used: 116
+⏱️  Response time: 4546ms
+📝 Response length: 185 chars
+🔢 Tokens used: 48
 
 Response:
-Based on the product data, here is the list of products that meet the criteria:
+Here is the list of products that are in the "Electronics" category and cost less than $50:    
 
-* Wireless Mouse (id: 1)
-* USB-C Hub (id: 3) - Note: this product is currently out of stock, so it does not strictly meet all three criteria. However, I will include it in the list as per your request.
-* Desk Lamp (id: ...
+* Wireless Mouse ($29.99)
+* USB-C Hub ($45)
+
+Let me know if you need any further assistance!
 
 📊 Comparison
+================================================================================
+
+📦 INPUT SIZE COMPARISON (Data Only):
 ────────────────────────────────────────────────────────────────────────────────
-Input size reduction: 53.2% (1351 → 632 chars)
-Response time difference: -25.2% (12786ms → 9560ms)
+JSON Format:  1096 chars, 1096 bytes
+TOON Format:  377 chars, 377 bytes
+
+💾 Size Reduction:
+   Characters: 65.6% (1096 → 377 chars)
+   Bytes:      65.6% (1096 → 377 bytes)
+   ✅ TOON is smaller!
+
+📝 FULL PROMPT SIZE COMPARISON:
+
+📝 FULL PROMPT SIZE COMPARISON:
+
+📝 FULL PROMPT SIZE COMPARISON:
+
+📝 FULL PROMPT SIZE COMPARISON:
+────────────────────────────────────────────────────────────────────────────────
+JSON Prompt:  1322 chars
+TOON Prompt:  603 chars
+Reduction:    54.4% (1322 → 603 chars)
+
+⏱️  RESPONSE TIME COMPARISON:
+────────────────────────────────────────────────────────────────────────────────
+JSON:  6144ms
+TOON:  4546ms
+Difference: -26.0% (6144ms → 4546ms)
 ✅ TOON is faster!
 
 ✅ Test complete!
-(base) PS C:\Users\gaura\OneDrive\Desktop\AI projects\toon_json_for_llm> 
