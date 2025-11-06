@@ -240,9 +240,25 @@ function compareDataset(dataset) {
   // Show samples
   console.log('\n📄 Sample Outputs:');
   console.log('\n--- JSON (Pretty) ---');
-  console.log(results[1].content.substring(0, 400) + (results[1].content.length > 400 ? '...' : ''));
+  
+  // For large orders dataset, show full JSON; otherwise truncate for readability
+  const isLargeOrders = dataset.name.includes('Large Order');
+  if (isLargeOrders) {
+    // Display full JSON for large orders dataset
+    console.log(results[1].content);
+  } else {
+    // Truncate for smaller datasets
+    console.log(results[1].content.substring(0, 400) + (results[1].content.length > 400 ? '...' : ''));
+  }
+  
   console.log('\n--- ' + toonBest.format + ' ---');
-  console.log(toonBest.content.substring(0, 400) + (toonBest.content.length > 400 ? '...' : ''));
+  if (isLargeOrders) {
+    // Display full TOON for large orders dataset
+    console.log(toonBest.content);
+  } else {
+    // Truncate for smaller datasets
+    console.log(toonBest.content.substring(0, 400) + (toonBest.content.length > 400 ? '...' : ''));
+  }
 
   return { dataset: dataset.name, results, bestFormat: toonBest.format };
 }

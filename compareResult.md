@@ -1,5 +1,5 @@
 ```bash
-(base) PS C:\Users\gaura\OneDrive\Desktop\AI projects\toon_json_for_llm> npm run compare
+npm run compare
 
 > toon-json-comparison@1.0.0 compare
 > node src/compare.js
@@ -70,12 +70,12 @@ Using tokenizer from tiktoken library
 
 ```toon
 users:
-[5      ]{id    name    role    lastLogin}:
-  1     Alice   admin   2025-01-15T10:30:00Z
-  2     Bob     user    2025-01-14T15:22:00Z
-  3     Charlie user    2025-01-13T09:45:00Z
-  4     Diana   moderator       2025-01-12T11:00:00Z
-  5     Eve     user    2025-01-11T08:30:00Z
+[5	]{id	name	role	lastLogin}:
+  1	Alice	admin	2025-01-15T10:30:00Z
+  2	Bob	user	2025-01-14T15:22:00Z
+  3	Charlie	user	2025-01-13T09:45:00Z
+  4	Diana	moderator	2025-01-12T11:00:00Z
+  5	Eve	user	2025-01-11T08:30:00Z
 ```
 
 ---
@@ -201,14 +201,14 @@ products:
 
 | Format        | Bytes | Chars | Lines | GPT-4o Tokens |
 |---------------|-------|-------|-------|---------------|
-| JSON (Compact)| 2322  | 2322  | 1     | 892           |
-| JSON (Pretty) | 3650  | 3650  | 184   | 1396          |
-| TOON (Comma)  | 996   | 996   | 22    | 627           |
-| TOON (Tab)    | 996   | 996   | 22    | 617           |
-| TOON (Pipe)   | 996   | 996   | 22    | 629           |
+| JSON (Compact)| 2316  | 2316  | 1     | 890           |
+| JSON (Pretty) | 3644  | 3644  | 184   | 1394          |
+| TOON (Comma)  | 990   | 990   | 22    | 625           |
+| TOON (Tab)    | 990   | 990   | 22    | 617           |
+| TOON (Pipe)   | 990   | 990   | 22    | 627           |
 
 ✅ Best TOON format: TOON (Tab)
-💡 Token reduction: 55.8% (1396 → 617 tokens)
+💡 Token reduction: 55.7% (1394 → 617 tokens)
 
 ### 📄 Sample Outputs
 
@@ -221,27 +221,180 @@ products:
       "id": 1,
       "customerId": 1,
       "productId": 1,
-      "quantity": 2,
-      "price": 38.96,
-      "date": "2025-01-26T15:00:00Z",
-      "status": "completed"
+      "quantity": 4,
+      "price": 81.84,
+      "date": "2025-01-11T11:00:00Z",
+      "status": "pending"
     },
     {
       "id": 2,
       "customerId": 2,
       "productId": 2,
-      "quantity": 4,
-      "price": 56.34,
-      "date": "2025-01-12T23:00:00Z",
-      "status": "pending"
+      "quantity": 3,
+      "price": 73.57,
+      "date": "2025-01-18T07:00:00Z",
+      "status": "shipped"
     },
     {
       "id": 3,
       "customerId": 3,
       "productId": 3,
       "quantity": 1,
-      "price": 38.78,
-      "date": "2025-01-01T02:00:00Z",
+      "price": 51.95,
+      "date": "2025-01-17T14:00:00Z",
+      "status": "completed"
+    },
+    {
+      "id": 4,
+      "customerId": 4,
+      "productId": 4,
+      "quantity": 2,
+      "price": 52.38,
+      "date": "2025-01-11T10:00:00Z",
+      "status": "pending"
+    },
+    {
+      "id": 5,
+      "customerId": 5,
+      "productId": 5,
+      "quantity": 2,
+      "price": 65.13,
+      "date": "2025-01-07T16:00:00Z",
+      "status": "completed"
+    },
+    {
+      "id": 6,
+      "customerId": 1,
+      "productId": 6,
+      "quantity": 2,
+      "price": 19.47,
+      "date": "2025-01-28T18:00:00Z",
+      "status": "shipped"
+    },
+    {
+      "id": 7,
+      "customerId": 2,
+      "productId": 7,
+      "quantity": 2,
+      "price": 92.11,
+      "date": "2025-01-16T07:00:00Z",
+      "status": "shipped"
+    },
+    {
+      "id": 8,
+      "customerId": 3,
+      "productId": 8,
+      "quantity": 2,
+      "price": 99.64,
+      "date": "2025-01-01T22:00:00Z",
+      "status": "pending"
+    },
+    {
+      "id": 9,
+      "customerId": 4,
+      "productId": 9,
+      "quantity": 5,
+      "price": 98.65,
+      "date": "2025-01-02T03:00:00Z",
+      "status": "pending"
+    },
+    {
+      "id": 10,
+      "customerId": 5,
+      "productId": 10,
+      "quantity": 1,
+      "price": 103.86,
+      "date": "2025-01-07T22:00:00Z",
+      "status": "pending"
+    },
+    {
+      "id": 11,
+      "customerId": 1,
+      "productId": 1,
+      "quantity": 4,
+      "price": 56.32,
+      "date": "2025-01-14T05:00:00Z",
+      "status": "completed"
+    },
+    {
+      "id": 12,
+      "customerId": 2,
+      "productId": 2,
+      "quantity": 1,
+      "price": 70.73,
+      "date": "2025-01-23T23:00:00Z",
+      "status": "completed"
+    },
+    {
+      "id": 13,
+      "customerId": 3,
+      "productId": 3,
+      "quantity": 5,
+      "price": 60.23,
+      "date": "2025-01-10T04:00:00Z",
+      "status": "pending"
+    },
+    {
+      "id": 14,
+      "customerId": 4,
+      "productId": 4,
+      "quantity": 5,
+      "price": 16.4,
+      "date": "2025-01-12T17:00:00Z",
+      "status": "pending"
+    },
+    {
+      "id": 15,
+      "customerId": 5,
+      "productId": 5,
+      "quantity": 2,
+      "price": 19.67,
+      "date": "2025-01-11T10:00:00Z",
+      "status": "shipped"
+    },
+    {
+      "id": 16,
+      "customerId": 1,
+      "productId": 6,
+      "quantity": 3,
+      "price": 60.1,
+      "date": "2025-01-20T05:00:00Z",
+      "status": "pending"
+    },
+    {
+      "id": 17,
+      "customerId": 2,
+      "productId": 7,
+      "quantity": 1,
+      "price": 90.41,
+      "date": "2025-01-15T20:00:00Z",
+      "status": "completed"
+    },
+    {
+      "id": 18,
+      "customerId": 3,
+      "productId": 8,
+      "quantity": 5,
+      "price": 29.19,
+      "date": "2025-01-15T10:00:00Z",
+      "status": "completed"
+    },
+    {
+      "id": 19,
+      "customerId": 4,
+      "productId": 9,
+      "quantity": 2,
+      "price": 84.54,
+      "date": "2025-01-02T01:00:00Z",
+      "status": "shipped"
+    },
+    {
+      "id": 20,
+      "customerId": 5,
+      "productId": 10,
+      "quantity": 4,
+      "price": 20.48,
+      "date": "2025-01-14T19:00:00Z",
       "status": "pending"
     }
   ]
@@ -252,15 +405,27 @@ products:
 
 ```toon
 orders:
-[20     ]{id    customerId      productId       quantity        price   date    status}:
-  1     1       1       2       38.96   2025-01-26T15:00:00Z    completed
-  2     2       2       4       56.34   2025-01-12T23:00:00Z    pending
-  3     3       3       1       38.78   2025-01-01T02:00:00Z    pending
-  4     4       4       3       90.39   2025-01-18T01:00:00Z    shipped
-  5     5       5       3       84.11   2025-01-21T23:00:00Z    pending
-  6     1       6       5       104.56  2025-01-27T02:00:00Z    completed
-  7     2       7       4       96.41   2025-01-13T10:00:00Z    shipped
-  8     3       8       4       102.34  2025-01-05T14:00:00Z    completed
+[20	]{id	customerId	productId	quantity	price	date	status}:
+  1	1	1	4	81.84	2025-01-11T11:00:00Z	pending
+  2	2	2	3	73.57	2025-01-18T07:00:00Z	shipped
+  3	3	3	1	51.95	2025-01-17T14:00:00Z	completed
+  4	4	4	2	52.38	2025-01-11T10:00:00Z	pending
+  5	5	5	2	65.13	2025-01-07T16:00:00Z	completed
+  6	1	6	2	19.47	2025-01-28T18:00:00Z	shipped
+  7	2	7	2	92.11	2025-01-16T07:00:00Z	shipped
+  8	3	8	2	99.64	2025-01-01T22:00:00Z	pending
+  9	4	9	5	98.65	2025-01-02T03:00:00Z	pending
+  10	5	10	1	103.86	2025-01-07T22:00:00Z	pending
+  11	1	1	4	56.32	2025-01-14T05:00:00Z	completed
+  12	2	2	1	70.73	2025-01-23T23:00:00Z	completed
+  13	3	3	5	60.23	2025-01-10T04:00:00Z	pending
+  14	4	4	5	16.4	2025-01-12T17:00:00Z	pending
+  15	5	5	2	19.67	2025-01-11T10:00:00Z	shipped
+  16	1	6	3	60.1	2025-01-20T05:00:00Z	pending
+  17	2	7	1	90.41	2025-01-15T20:00:00Z	completed
+  18	3	8	5	29.19	2025-01-15T10:00:00Z	completed
+  19	4	9	2	84.54	2025-01-02T01:00:00Z	shipped
+  20	5	10	4	20.48	2025-01-14T19:00:00Z	pending
 ```
 
 ---
@@ -284,3 +449,4 @@ orders:
 - Tab delimiters often tokenize better than commas
 - TOON is most effective for uniform object arrays
 - Real savings: ~40-60% token reduction for tabular data
+
