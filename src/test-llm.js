@@ -58,7 +58,6 @@ async function testWithModel(modelName) {
   const prompt = `You are a helpful assistant. Analyze the product data below and list all products that are:
 1. In the "Electronics" category
 2. Currently in stock
-3. Price is less than $50
 
 Format your response as a simple list.`;
 
